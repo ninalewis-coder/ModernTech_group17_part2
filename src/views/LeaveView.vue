@@ -1,9 +1,14 @@
 <template>
     <div class="leave-container">
         <div>
-            <div>
-                <h1>Leave Management</h1>
-                <p>Request and manage time-off and leave</p>
+            <div class="col-md-12 col-sm-12 mb-12">
+                <div class="card m-1" style="background-color: rgb(122, 108, 202);">
+                    <div class="card-body" style="color:white">
+                        <h5 class="card-title" style="font-size:xx-large;">
+                            Leave Management
+                        </h5>
+                    </div>
+                </div>
             </div>
 
             <button class="btn">
@@ -121,7 +126,7 @@
 
 <style scoped>
 .leave-container {
-    padding-top: 90px;
+    padding-top: 80px;
 }
 
 h1{
