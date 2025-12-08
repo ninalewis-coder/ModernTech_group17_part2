@@ -81,6 +81,21 @@
     </div> 
 </template>
 
+<script>
+import { ref } from 'vue';
+
+export default {
+    name: 'HomeView',
+    setup() {
+        const userName = ref('Admin');
+        
+        return {
+            userName
+        };
+    }
+};
+</script>
+
 <style scoped>
 .home-container {
     padding-top: 100px;

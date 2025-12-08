@@ -13,6 +13,8 @@
                   type="text" 
                   class="form-control" 
                   placeholder="Search.."
+                  />
+                </div>
                 <div>
                     <h6>Total Days</h6>
                     <h2>{{ employeeStats.total }}</h2>
@@ -42,9 +44,9 @@
                     </thead>
 
                     <tbody>
-                        <tr>
+                        <tr v-for="employee in employees" :key="employee.employeeId">
                             <td>{{ employee.name }}</td>
-                            <td>{{ employee.email }}</td>
+                            <td>{{ employee.contact }}</td>
                             <td>{{ employee.department }}</td>
                             <td>{{ employee.position }}</td>
                             <td>{{ employee.salary }}</td>
@@ -79,6 +81,40 @@
         </div>
     </div> 
 </template>
+
+<script>
+import { ref, computed, onMounted } from 'vue';
+import employeeData from '@/data/employee_info.json';
+
+export default {
+    name: 'EmployeeView',
+    setup() {
+        const employees = ref([]);
+        
+        const employeeStats = computed(() => ({
+            total: 30,
+            present: 25,
+            absent: 5
+        }));
+        
+        const companyStats = computed(() => ({
+            totalPresent: 25,
+            totalAbsent: 5,
+            totalLeave: 3
+        }));
+        
+        onMounted(() => {
+            employees.value = employeeData.employeeInformation;
+        });
+        
+        return {
+            employees,
+            employeeStats,
+            companyStats
+        };
+    }
+};
+</script>
 
 <style scoped>
 .employees-container {
