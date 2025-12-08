@@ -1,11 +1,15 @@
-<script setup></script>
+<script setup>
+import { ref } from "vue"
+import Navbar from "./components/Navbar.vue"
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+   <Navbar />
+   <router-view />
 </template>
 
-<style scoped></style>
+<style scoped>
+body {
+   padding-top: 80px;
+}
+</style>
