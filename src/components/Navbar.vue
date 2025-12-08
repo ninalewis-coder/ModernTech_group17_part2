@@ -3,20 +3,21 @@ import { RouterLink } from "vue-router"
 </script>
 
 <template>
-  <!-- Navigation Bar -->
-  <nav class="navbar navbar-dark bg-dark fixed-top">
+<!-- Navigation Bar -->
+<nav class="navbar navbar-dark bg-dark fixed-top">
   <div class="container-fluid">
     <RouterLink to="/" class="navbar-brand" href="#">
-      <img src="@/assets/ModernTech-dark.png" alt="logo" height="60" class="me-2">Modern Tech HR
+      <img src="@/assets/ModernTech-dark.png" alt="logo" height="50" class="me-2">Modern Tech HR
     </RouterLink>
 
     <!-- Toggle Button -->
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
+      <span class="d-none d-lg-inline"> Menu</span>
     </button>
 
     <!-- Items & Links -->
-    <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
+    <div class="offcanvas offcanvas-end text-bg-dark custom-sidebar" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">
           Menu
@@ -79,4 +80,20 @@ import { RouterLink } from "vue-router"
 </nav>
 </template>
 
-<style scoped></style>
+<style scoped>
+  .custom-sidebar {
+    width: 250px;
+  }
+
+@media (max-width: 768px) {
+  .custom-sidebar {
+    width: 220px;
+  }
+}
+
+@media (max-width: 576px) {
+  .custom-sidebar {
+    width: 180px;
+  }
+}
+</style>
