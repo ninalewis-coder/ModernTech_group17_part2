@@ -2,7 +2,7 @@
 
 A modern, responsive web-based HR Management System built with Vue.js and Bootstrap for ModernTech Solutions.
 
-## 🎯 Project Overview
+## Project Overview
 
 This is a front-end proof-of-concept HR system designed to centralize and streamline HR operations including:
 - Employee information management
@@ -10,11 +10,11 @@ This is a front-end proof-of-concept HR system designed to centralize and stream
 - Leave request management
 - Payroll processing and payslip generation
 
-## 🏢 Case Study Background
+## Case Study Background
 
 ModernTech Solutions is a software development company that has grown from 20 to 250 employees. This HR system addresses their pain points by replacing fragmented spreadsheet-based processes with a unified, user-friendly web application.
 
-## ✨ Features
+## Features
 
 ### 1. **Dashboard (Home)**
 - Real-time metrics display (Total employees, pending leaves, payroll, departments)
@@ -59,7 +59,7 @@ ModernTech Solutions is a software development company that has grown from 20 to
 - **Build Tool:** Vite
 - **Data Storage:** JSON files (dummy data)
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ModernTech_HR-group17/
@@ -91,7 +91,7 @@ ModernTech_HR-group17/
 └── vite.config.js
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js (v20.19.0 or higher)
@@ -128,21 +128,21 @@ npm run build
 
 The production-ready files will be in the `dist/` folder.
 
-## 📱 Responsive Design
+## Responsive Design
 
 The application is fully responsive and works seamlessly on:
 - Desktop computers (1920px+)
 - Tablets (768px - 1024px)
 - Smartphones (320px - 767px)
 
-## 🎨 User Interface
+## User Interface
 
 - **Clean and Modern:** Intuitive interface with card-based layouts
 - **Color-Coded:** Status indicators and badges for quick visual reference
 - **Interactive:** Hover effects and smooth transitions
 - **Accessible:** Bootstrap components ensure accessibility standards
 
-## 💾 Data Management
+## Data Management
 
 All data is stored in JSON files and manipulated on the client-side. This is a front-end only application with no backend integration, perfect for demonstration and proof-of-concept purposes.
 
@@ -152,7 +152,7 @@ All data is stored in JSON files and manipulated on the client-side. This is a f
 - Leave requests with various statuses
 - Payroll data with hours worked and deductions
 
-## 🔧 Key Functionality Demonstrations
+## Key Functionality Demonstrations
 
 ### Employee Data Centralization
 - Single source of truth for employee information
@@ -174,7 +174,7 @@ All data is stored in JSON files and manipulated on the client-side. This is a f
 - Status filtering and search
 - Attendance rate analytics
 
-## 🌐 Browser Compatibility
+## Browser Compatibility
 
 Tested and compatible with:
 - Google Chrome (latest)
@@ -182,15 +182,15 @@ Tested and compatible with:
 - Microsoft Edge (latest)
 - Safari (latest)
 
-## 👥 Development Team - Group 17
+## Development Team - Group 17
 
 This project was developed as part of a front-end web development case study.
 
-## 📄 License
+## License
 
 This project is developed for educational purposes as part of a case study assignment.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - ModernTech Solutions case study provided by the course instructors
 - Bootstrap team for the excellent UI framework

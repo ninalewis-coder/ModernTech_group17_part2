@@ -240,6 +240,7 @@
 import { ref, computed, onMounted } from 'vue';
 import employeeData from '@/data/employee_info.json';
 import payrollData from '@/data/payroll_data.json';
+import jsPDF from 'jspdf';
 
 const employees = ref([]);
 const payrollRecords = ref([]);
@@ -294,7 +295,111 @@ const calculateDeductionAmount = (payroll) => {
 };
 
 const downloadPayslip = (payroll) => {
-    alert(`Downloading payslip for ${payroll.employeeName}...`);
+    const doc = new jsPDF();
+    
+    // Set font
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    
+    // Company Header
+    doc.setTextColor(122, 108, 202);
+    doc.text('ModernTech Solutions', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('Employee Payslip', 105, 28, { align: 'center' });
+    
+    // Line separator
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, 35, 190, 35);
+    
+    // Employee Information Section
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    
+    let yPos = 45;
+    
+    // Left column
+    doc.text('Employee Information:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    yPos += 8;
+    doc.text(`Employee Name: ${payroll.employeeName}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Employee ID: ${payroll.employeeId}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Department: ${payroll.department}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Position: ${payroll.position}`, 20, yPos);
+    
+    // Right column
+    yPos = 45;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Payment Details:', 120, yPos);
+    doc.setFont('helvetica', 'normal');
+    yPos += 8;
+    doc.text(`Pay Period: ${currentMonth.value}`, 120, yPos);
+    yPos += 6;
+    doc.text(`Payment Date: ${currentDate.value}`, 120, yPos);
+    
+    // Salary Breakdown Section
+    yPos = 85;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, yPos, 190, yPos);
+    
+    yPos += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Salary Breakdown', 20, yPos);
+    
+    // Table Header
+    yPos += 10;
+    doc.setFillColor(240, 240, 240);
+    doc.rect(20, yPos - 5, 170, 8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.text('Description', 25, yPos);
+    doc.text('Amount', 160, yPos);
+    
+    // Table Rows
+    doc.setFont('helvetica', 'normal');
+    yPos += 10;
+    doc.text('Base Salary', 25, yPos);
+    doc.text(`R ${payroll.baseSalary.toLocaleString()}`, 160, yPos);
+    
+    yPos += 8;
+    doc.text(`Hours Worked (${payroll.hoursWorked} hours)`, 25, yPos);
+    doc.text('-', 160, yPos);
+    
+    yPos += 8;
+    const deductionAmount = calculateDeductionAmount(payroll);
+    doc.setTextColor(200, 100, 0);
+    doc.text(`Leave Deductions (${payroll.leaveDeductions} hours)`, 25, yPos);
+    doc.text(`-R ${deductionAmount.toLocaleString()}`, 160, yPos);
+    
+    // Net Salary
+    yPos += 10;
+    doc.setDrawColor(0, 150, 0);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPos - 2, 190, yPos - 2);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 150, 0);
+    doc.text('Net Salary', 25, yPos + 3);
+    doc.text(`R ${payroll.finalSalary.toLocaleString()}`, 160, yPos + 3);
+    
+    // Footer Note
+    yPos += 20;
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'italic');
+    doc.text('Note: This is a computer-generated payslip and does not require a signature.', 105, yPos, { align: 'center' });
+    
+    yPos += 10;
+    doc.text(`Generated on ${new Date().toLocaleString()}`, 105, yPos, { align: 'center' });
+    
+    // Save the PDF
+    doc.save(`Payslip_${payroll.employeeName.replace(/\s+/g, '_')}_${currentMonth.value.replace(/\s+/g, '_')}.pdf`);
 };
 
 const printPayslip = () => {

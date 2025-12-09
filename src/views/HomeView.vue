@@ -42,7 +42,7 @@
                     <div class="metric-card card h-80 w-80">
                         <div class="card-body">
                             <h5 class="card-title">Pending Payroll</h5>
-                            <p class="card-text fw-bold fs-3">{{ "?" }}</p>
+                            <p class="card-text fw-bold fs-3">{{ "0" }}</p>
                         </div>
                     </div>
                 </div>
