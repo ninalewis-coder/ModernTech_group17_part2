@@ -25,7 +25,10 @@
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="metric-card card h-100 w-100">
                         <div class="card-body">
-                            <h5 class="card-title">Total Employees</h5>
+                             <li class="nav-item">
+                                 <RouterLink to="/attendance" class="nav-link" href="#">
+                                    <h5 class="card-title">Total Employees</h5></RouterLink>
+                                </li>
                             <p class="card-text fw-bold fs-3">{{ totalEmployees }}</p>
                         </div>
                     </div>
@@ -33,7 +36,10 @@
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="metric-card card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">Pending Leave Requests</h5>
+                              <li class="nav-item">
+                                 <RouterLink to="/leave" class="nav-link" href="#">
+                                    <h5 class="card-title">Pending Leave Requests</h5></RouterLink>
+                                </li>
                             <p class="card-text fw-bold fs-3">{{ pendingLeaveRequests }}</p>
                         </div>
                     </div>
@@ -41,7 +47,10 @@
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="metric-card card h-80 w-80">
                         <div class="card-body">
-                            <h5 class="card-title">Pending Payroll</h5>
+                            <li class="nav-item">
+                                <RouterLink to="/payroll" class="nav-link" href="#">
+                                    <H5 class=" card-title">Pending Payroll</H5></RouterLink>
+                            </li>
                             <p class="card-text fw-bold fs-3">{{ "0" }}</p>
                         </div>
                     </div>
@@ -49,7 +58,10 @@
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="metric-card card h-100 w-100">
                         <div class="card-body">
-                            <h5 class="card-title">Departments</h5>
+                            <li class="nav-item">
+                                <RouterLink to="/employees" class="nav-link" href="#">
+                                    <h5 class="card-title">Departments</h5></RouterLink>
+                            </li>
                             <p class="card-text fw-bold fs-3">{{ totalDepartments }}</p>
                         </div>
                     </div>

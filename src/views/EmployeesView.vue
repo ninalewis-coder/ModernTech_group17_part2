@@ -40,43 +40,7 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card bg-primary text-white">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Total Employees</h6>
-                            <h2>{{ employees.length }}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Departments</h6>
-                            <h2>{{ departments.length }}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card bg-info text-white">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Average Salary</h6>
-                            <h2>R{{ averageSalary.toLocaleString() }}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card bg-warning text-white">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Total Payroll</h6>
-                            <h2>R{{ totalPayroll.toLocaleString() }}</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            
             <!-- Employees Table -->
             <div class="card">
                 <div class="card-header">

@@ -37,34 +37,6 @@
             </div>
             </div>
 
-            <!-- Attendance Summary Cards -->
-            <div class="row mb-4">
-                <div class="col-md-4 mb-3">
-                    <div class="card bg-primary text-white">
-                        <div class="card-body">
-                            <h6 class="card-title">Total Days Tracked</h6>
-                            <h2>{{ attendanceStats.totalDays }}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body">
-                            <h6 class="card-title">Total Present</h6>
-                            <h2>{{ attendanceStats.present }}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card bg-danger text-white">
-                        <div class="card-body">
-                            <h6 class="card-title">Total Absent</h6>
-                            <h2>{{ attendanceStats.absent }}</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Attendance Records Table -->
             <div class="card">
                 <div class="card-header">
