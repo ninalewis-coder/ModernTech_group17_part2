@@ -52,6 +52,11 @@ import { RouterLink } from "vue-router"
               Payroll
             </RouterLink>
           </li>
+          <li class="nav-item">
+            <RouterLink to="/reviews" class="nav-link" href="#">
+              Reviews
+            </RouterLink>
+          </li>
           
           <li class="nav-item dropdown mt-auto">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
