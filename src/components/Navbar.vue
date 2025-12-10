@@ -1,5 +1,36 @@
 <script setup>
-import { RouterLink } from "vue-router"
+import { RouterLink, useRouter } from "vue-router"
+import { ref, onMounted } from "vue"
+
+const router = useRouter()
+const userName = ref("")
+
+onMounted(() => {
+  userName.value = localStorage.getItem("userName") || "User"
+})
+
+const logout = () => {
+  // Close the offcanvas menu
+  const offcanvasElement = document.getElementById('offcanvasDarkNavbar')
+  if (offcanvasElement) {
+    const bsOffcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasElement)
+    if (bsOffcanvas) {
+      bsOffcanvas.hide()
+    }
+  }
+  
+  // Clear authentication data
+  localStorage.removeItem("isAuthenticated")
+  localStorage.removeItem("userName")
+  localStorage.removeItem("userEmail")
+  localStorage.removeItem("userRole")
+  localStorage.removeItem("employeeId")
+  
+  // Redirect to login page after a brief delay to allow offcanvas to close
+  setTimeout(() => {
+    router.push("/login")
+  }, 300)
+}
 </script>
 
 <template>
@@ -60,21 +91,21 @@ import { RouterLink } from "vue-router"
           
           <li class="nav-item dropdown mt-auto">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              store.currentUser.name
+              {{ userName }}
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
               <li>
                 <small class="dropdown-item">
-                store.currentUser.name
+                {{ userName }}
                 </small>
               </li>
               <li>
                 <hr class="dropdown-divider">
               </li>
               <li>
-                <RouterLink to="" class="dropdown-item" href="#">
-                  Logout
-                </RouterLink>
+                <a @click.prevent="logout" class="dropdown-item" href="#" style="cursor: pointer;">
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
               </li>
             </ul>
           </li>
