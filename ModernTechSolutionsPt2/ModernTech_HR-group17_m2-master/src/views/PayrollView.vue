@@ -239,35 +239,45 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import employeeData from '@/data/employee_info.json';
-import payrollData from '@/data/payroll_data.json';
 import jsPDF from 'jspdf';
+
+const API_BASE_URL = 'http://localhost:5050';
 
 const employees = ref([]);
 const payrollRecords = ref([]);
 const selectedEmployeeId = ref('');
 const selectedPayslip = ref(null);
+const isLoading = ref(false);
 const payPeriod = ref({
     startDate: '',
     endDate: ''
 });
 
 // Computed properties
-const totalPayroll = computed(() => 
-    payrollRecords.value.reduce((sum, p) => sum + p.finalSalary, 0)
-);
-
-const averageSalary = computed(() => {
-    if (payrollRecords.value.length === 0) return 0;
-    return Math.round(totalPayroll.value / payrollRecords.value.length);
+const totalPayroll = computed(() => {
+    if (!payrollRecords.value || payrollRecords.value.length === 0) return 0;
+    const total = payrollRecords.value.reduce((sum, p) => {
+        const salary = parseFloat(p.finalSalary) || 0;
+        return sum + salary;
+    }, 0);
+    return Math.round(total);
 });
 
-const totalHours = computed(() => 
-    payrollRecords.value.reduce((sum, p) => sum + p.hoursWorked, 0)
-);
+const averageSalary = computed(() => {
+    if (!payrollRecords.value || payrollRecords.value.length === 0) return 0;
+    const avg = totalPayroll.value / payrollRecords.value.length;
+    return Math.round(avg);
+});
 
-const totalDeductions = computed(() => 
-    payrollRecords.value.reduce((sum, p) => sum + p.leaveDeductions, 0)
-);
+const totalHours = computed(() => {
+    if (!payrollRecords.value || payrollRecords.value.length === 0) return 0;
+    return payrollRecords.value.reduce((sum, p) => sum + (parseInt(p.hoursWorked) || 0), 0);
+});
+
+const totalDeductions = computed(() => {
+    if (!payrollRecords.value || payrollRecords.value.length === 0) return 0;
+    return payrollRecords.value.reduce((sum, p) => sum + (parseInt(p.leaveDeductions) || 0), 0);
+});
 
 const currentDate = computed(() => {
     return new Date().toLocaleDateString('en-US', { 
@@ -410,40 +420,142 @@ const generateAllPayslips = () => {
     alert('Generating payslips for all employees...');
 };
 
-const processPayroll = () => {
-    alert('Payroll processed successfully!');
-    
-    // Reset form
-    selectedEmployeeId.value = '';
-    payPeriod.value = {
-        startDate: '',
-        endDate: ''
-    };
-    
-    // Close modal
-    const modalElement = document.getElementById('payrollModal');
-    const modal = bootstrap.Modal.getInstance(modalElement);
-    if (modal) modal.hide();
+const loadPayrollData = async () => {
+    try {
+        isLoading.value = true;
+        const response = await fetch(`${API_BASE_URL}/payroll`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch payroll data');
+        }
+        const payrollDataFromAPI = await response.json();
+        
+        // Map backend response to frontend format
+        payrollRecords.value = payrollDataFromAPI.map(pay => {
+            const employee = employees.value.find(e => e.employeeId === pay.employee_id);
+            return {
+                payroll_id: pay.payroll_id,
+                employeeId: pay.employee_id,
+                employeeName: employee ? employee.name : 'Unknown',
+                department: employee ? employee.department : 'Unknown',
+                position: employee ? employee.position : 'Unknown',
+                baseSalary: employee ? employee.salary : 0,
+                hoursWorked: pay.hours_worked,
+                leaveDeductions: pay.leave_deductions,
+                finalSalary: pay.final_salary
+            };
+        });
+    } catch (error) {
+        console.error('Failed to load payroll data:', error);
+        alert('Error loading payroll data: ' + error.message);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const processPayroll = async () => {
+    try {
+        if (!selectedEmployeeId.value) {
+            alert('Please select an employee');
+            return;
+        }
+
+        const employee = employees.value.find(e => e.employeeId === selectedEmployeeId.value);
+        if (!employee) {
+            alert('Employee not found');
+            return;
+        }
+
+        isLoading.value = true;
+        
+        // Prepare payroll data
+        const payrollPayload = {
+            employee_id: parseInt(selectedEmployeeId.value),
+            hours_worked: 160,
+            leave_deductions: 0,
+            final_salary: employee.salary
+        };
+
+        // Add to backend API
+        const response = await fetch(`${API_BASE_URL}/payroll`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payrollPayload)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to process payroll');
+        }
+
+        // Reload data
+        await loadPayrollData();
+        
+        alert('Payroll processed successfully!');
+        
+        // Reset form
+        selectedEmployeeId.value = '';
+        payPeriod.value = {
+            startDate: '',
+            endDate: ''
+        };
+        
+        // Close modal
+        const modalElement = document.getElementById('payrollModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
+    } catch (error) {
+        console.error('Error processing payroll:', error);
+        alert('Failed to process payroll: ' + error.message);
+    } finally {
+        isLoading.value = false;
+    }
 };
 
 // Initialize data
-onMounted(() => {
-    employees.value = employeeData.employeeInformation;
-    
-    // Combine employee and payroll data
-    payrollRecords.value = payrollData.payrollData.map(pay => {
-        const employee = employees.value.find(e => e.employeeId === pay.employeeId);
-        return {
-            employeeId: pay.employeeId,
-            employeeName: employee ? employee.name : 'Unknown',
-            department: employee ? employee.department : 'Unknown',
-            position: employee ? employee.position : 'Unknown',
-            baseSalary: employee ? employee.salary : 0,
-            hoursWorked: pay.hoursWorked,
-            leaveDeductions: pay.leaveDeductions,
-            finalSalary: pay.finalSalary
-        };
-    });
+onMounted(async () => {
+    try {
+        console.log('🚀 PayrollView mounted - loading data...');
+        employees.value = employeeData.employeeInformation;
+        console.log(`✅ Loaded ${employees.value.length} employees`);
+        
+        // Load payroll data from backend
+        isLoading.value = true;
+        console.log('📡 Fetching payroll data from backend...');
+        
+        const response = await fetch(`${API_BASE_URL}/payroll`);
+        console.log(`Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const payrollDataFromAPI = await response.json();
+        console.log('✅ Data received from backend:', payrollDataFromAPI);
+        
+        // Map backend response to frontend format
+        payrollRecords.value = payrollDataFromAPI.map(pay => {
+            const employee = employees.value.find(e => e.employeeId === pay.employee_id);
+            return {
+                payroll_id: pay.payroll_id,
+                employeeId: pay.employee_id,
+                employeeName: employee ? employee.name : 'Unknown',
+                department: employee ? employee.department : 'Unknown',
+                position: employee ? employee.position : 'Unknown',
+                baseSalary: employee ? employee.salary : 0,
+                hoursWorked: pay.hours_worked,
+                leaveDeductions: pay.leave_deductions,
+                finalSalary: pay.final_salary
+            };
+        });
+        
+        console.log(`✅ Successfully loaded ${payrollRecords.value.length} payroll records`);
+        isLoading.value = false;
+    } catch (error) {
+        console.error('❌ Error during initialization:', error);
+        isLoading.value = false;
+        alert('❌ Failed to load payroll data:\n' + error.message + '\n\nMake sure:\n1. Backend is running on http://localhost:5050\n2. MySQL database is running\n3. "modern_solutions" database exists with "payroll" table');
+    }
 });
 </script>
 
