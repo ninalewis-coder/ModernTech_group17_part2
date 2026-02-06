@@ -9,7 +9,7 @@
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40103 SET TIME_ZONE='+00:00'   */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
@@ -138,5 +138,31 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+ALTER TABLE attendance
+ADD CONSTRAINT unique_employee_date
+UNIQUE (employee_id, date);
+
+ALTER TABLE attendance
+MODIFY status ENUM('Present','Absent','Late','On Leave');
+
+SHOW CREATE TABLE attendance;
+SHOW CREATE TABLE leave_request;
+
+SELECT employee_id, date, COUNT(*) AS cnt
+FROM attendance
+GROUP BY employee_id, date
+HAVING cnt > 1;
+
+DELETE a1
+FROM attendance a1
+JOIN attendance a2 
+  ON a1.employee_id = a2.employee_id 
+ AND a1.date = a2.date 
+ AND a1.attendance_id > a2.attendance_id;
+ 
+ ALTER TABLE attendance
+ADD CONSTRAINT unique_employee_date
+UNIQUE (employee_id, date);
 
 -- Dump completed on 2026-02-03 11:49:01
