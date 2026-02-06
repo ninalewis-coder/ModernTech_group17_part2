@@ -253,7 +253,6 @@ const payPeriod = ref({
     endDate: ''
 });
 
-// Computed properties
 const totalPayroll = computed(() => {
     if (!payrollRecords.value || payrollRecords.value.length === 0) return 0;
     const total = payrollRecords.value.reduce((sum, p) => {
@@ -294,7 +293,6 @@ const currentMonth = computed(() => {
     });
 });
 
-// Methods
 const viewPayslip = (payroll) => {
     selectedPayslip.value = payroll;
 };
@@ -307,11 +305,9 @@ const calculateDeductionAmount = (payroll) => {
 const downloadPayslip = (payroll) => {
     const doc = new jsPDF();
     
-    // Set font
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     
-    // Company Header
     doc.setTextColor(122, 108, 202);
     doc.text('ModernTech Solutions', 105, 20, { align: 'center' });
     
@@ -320,18 +316,15 @@ const downloadPayslip = (payroll) => {
     doc.setTextColor(100, 100, 100);
     doc.text('Employee Payslip', 105, 28, { align: 'center' });
     
-    // Line separator
     doc.setDrawColor(200, 200, 200);
     doc.line(20, 35, 190, 35);
     
-    // Employee Information Section
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'bold');
     
     let yPos = 45;
     
-    // Left column
     doc.text('Employee Information:', 20, yPos);
     doc.setFont('helvetica', 'normal');
     yPos += 8;
@@ -343,7 +336,6 @@ const downloadPayslip = (payroll) => {
     yPos += 6;
     doc.text(`Position: ${payroll.position}`, 20, yPos);
     
-    // Right column
     yPos = 45;
     doc.setFont('helvetica', 'bold');
     doc.text('Payment Details:', 120, yPos);
@@ -353,7 +345,6 @@ const downloadPayslip = (payroll) => {
     yPos += 6;
     doc.text(`Payment Date: ${currentDate.value}`, 120, yPos);
     
-    // Salary Breakdown Section
     yPos = 85;
     doc.setDrawColor(200, 200, 200);
     doc.line(20, yPos, 190, yPos);
@@ -361,8 +352,7 @@ const downloadPayslip = (payroll) => {
     yPos += 10;
     doc.setFont('helvetica', 'bold');
     doc.text('Salary Breakdown', 20, yPos);
-    
-    // Table Header
+
     yPos += 10;
     doc.setFillColor(240, 240, 240);
     doc.rect(20, yPos - 5, 170, 8, 'F');
@@ -370,7 +360,6 @@ const downloadPayslip = (payroll) => {
     doc.text('Description', 25, yPos);
     doc.text('Amount', 160, yPos);
     
-    // Table Rows
     doc.setFont('helvetica', 'normal');
     yPos += 10;
     doc.text('Base Salary', 25, yPos);
@@ -386,7 +375,6 @@ const downloadPayslip = (payroll) => {
     doc.text(`Leave Deductions (${payroll.leaveDeductions} hours)`, 25, yPos);
     doc.text(`-R ${deductionAmount.toLocaleString()}`, 160, yPos);
     
-    // Net Salary
     yPos += 10;
     doc.setDrawColor(0, 150, 0);
     doc.setLineWidth(0.5);
@@ -398,7 +386,6 @@ const downloadPayslip = (payroll) => {
     doc.text('Net Salary', 25, yPos + 3);
     doc.text(`R ${payroll.finalSalary.toLocaleString()}`, 160, yPos + 3);
     
-    // Footer Note
     yPos += 20;
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
@@ -408,7 +395,6 @@ const downloadPayslip = (payroll) => {
     yPos += 10;
     doc.text(`Generated on ${new Date().toLocaleString()}`, 105, yPos, { align: 'center' });
     
-    // Save the PDF
     doc.save(`Payslip_${payroll.employeeName.replace(/\s+/g, '_')}_${currentMonth.value.replace(/\s+/g, '_')}.pdf`);
 };
 
@@ -429,7 +415,6 @@ const loadPayrollData = async () => {
         }
         const payrollDataFromAPI = await response.json();
         
-        // Map backend response to frontend format
         payrollRecords.value = payrollDataFromAPI.map(pay => {
             const employee = employees.value.find(e => e.employeeId === pay.employee_id);
             return {
@@ -467,7 +452,6 @@ const processPayroll = async () => {
 
         isLoading.value = true;
         
-        // Prepare payroll data
         const payrollPayload = {
             employee_id: parseInt(selectedEmployeeId.value),
             hours_worked: 160,
@@ -475,7 +459,6 @@ const processPayroll = async () => {
             final_salary: employee.salary
         };
 
-        // Add to backend API
         const response = await fetch(`${API_BASE_URL}/payroll`, {
             method: 'POST',
             headers: {
@@ -488,19 +471,16 @@ const processPayroll = async () => {
             throw new Error('Failed to process payroll');
         }
 
-        // Reload data
         await loadPayrollData();
         
         alert('Payroll processed successfully!');
         
-        // Reset form
         selectedEmployeeId.value = '';
         payPeriod.value = {
             startDate: '',
             endDate: ''
         };
         
-        // Close modal
         const modalElement = document.getElementById('payrollModal');
         const modal = bootstrap.Modal.getInstance(modalElement);
         if (modal) modal.hide();
@@ -512,14 +492,12 @@ const processPayroll = async () => {
     }
 };
 
-// Initialize data
 onMounted(async () => {
     try {
         console.log('PayrollView mounted - loading data...');
         employees.value = employeeData.employeeInformation;
         console.log(`Loaded ${employees.value.length} employees`);
         
-        // Load payroll data from backend
         isLoading.value = true;
         console.log('Fetching payroll data from backend...');
         
@@ -533,7 +511,6 @@ onMounted(async () => {
         const payrollDataFromAPI = await response.json();
         console.log('Data received from backend:', payrollDataFromAPI);
         
-        // Map backend response to frontend format
         payrollRecords.value = payrollDataFromAPI.map(pay => {
             const employee = employees.value.find(e => e.employeeId === pay.employee_id);
             return {
