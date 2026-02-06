@@ -515,13 +515,13 @@ const processPayroll = async () => {
 // Initialize data
 onMounted(async () => {
     try {
-        console.log('🚀 PayrollView mounted - loading data...');
+        console.log('PayrollView mounted - loading data...');
         employees.value = employeeData.employeeInformation;
-        console.log(`✅ Loaded ${employees.value.length} employees`);
+        console.log(`Loaded ${employees.value.length} employees`);
         
         // Load payroll data from backend
         isLoading.value = true;
-        console.log('📡 Fetching payroll data from backend...');
+        console.log('Fetching payroll data from backend...');
         
         const response = await fetch(`${API_BASE_URL}/payroll`);
         console.log(`Response status: ${response.status}`);
@@ -531,7 +531,7 @@ onMounted(async () => {
         }
         
         const payrollDataFromAPI = await response.json();
-        console.log('✅ Data received from backend:', payrollDataFromAPI);
+        console.log('Data received from backend:', payrollDataFromAPI);
         
         // Map backend response to frontend format
         payrollRecords.value = payrollDataFromAPI.map(pay => {
@@ -549,12 +549,12 @@ onMounted(async () => {
             };
         });
         
-        console.log(`✅ Successfully loaded ${payrollRecords.value.length} payroll records`);
+        console.log(`Successfully loaded ${payrollRecords.value.length} payroll records`);
         isLoading.value = false;
     } catch (error) {
-        console.error('❌ Error during initialization:', error);
+        console.error('Error during initialization:', error);
         isLoading.value = false;
-        alert('❌ Failed to load payroll data:\n' + error.message + '\n\nMake sure:\n1. Backend is running on http://localhost:5050\n2. MySQL database is running\n3. "modern_solutions" database exists with "payroll" table');
+        alert('Failed to load payroll data:\n' + error.message + '\n\nMake sure:\n1. Backend is running on http://localhost:5050\n2. MySQL database is running\n3. "modern_solutions" database exists with "payroll" table');
     }
 });
 </script>
