@@ -147,16 +147,18 @@
 import { ref, computed, onMounted } from 'vue';
 import employeeData from '@/data/employee_info.json';
 
+const API_BASE_URL = 'http://localhost:5050';
+
 const employees = ref([]);
 const reviews = ref([]);
 const selectedReview = ref(null);
+const isLoading = ref(false);
 const newReview = ref({
     employeeId: '',
     period: '',
     review: ''
 });
 
-// Computed properties
 const thisMonthReviews = computed(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
     return reviews.value.filter(r => r.period === currentMonth).length;
@@ -171,7 +173,6 @@ const sortedReviews = computed(() => {
     return [...reviews.value].sort((a, b) => new Date(b.reviewDate) - new Date(a.reviewDate));
 });
 
-// Methods
 const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-US', options);
@@ -186,22 +187,51 @@ const viewReview = (review) => {
     selectedReview.value = review;
 };
 
-const submitReview = () => {
-    const employee = employees.value.find(e => e.employeeId === parseInt(newReview.value.employeeId));
-    
-    const review = {
-        id: reviews.value.length + 1,
-        employeeId: newReview.value.employeeId,
-        employeeName: employee.name,
-        department: employee.department,
-        period: newReview.value.period,
-        review: newReview.value.review,
-        reviewDate: new Date().toISOString()
-    };
-    
-    reviews.value.push(review);
-    alert('Review submitted successfully!');
-    resetForm();
+const submitReview = async () => {
+    try {
+        if (!newReview.value.employeeId || !newReview.value.period || !newReview.value.review) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        const employee = employees.value.find(e => e.employeeId === parseInt(newReview.value.employeeId));
+        
+        if (!employee) {
+            alert('Employee not found');
+            return;
+        }
+
+        isLoading.value = true;
+
+        const reviewPayload = {
+            employee_id: parseInt(newReview.value.employeeId),
+            review_period: newReview.value.period,
+            review: newReview.value.review,
+            review_date: new Date().toISOString()
+        };
+
+        const response = await fetch(`${API_BASE_URL}/reviews`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reviewPayload)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to submit review');
+        }
+
+        await loadReviewData();
+        
+        alert('Review submitted successfully!');
+        resetForm();
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        alert('Failed to submit review: ' + error.message);
+    } finally {
+        isLoading.value = false;
+    }
 };
 
 const resetForm = () => {
@@ -212,40 +242,51 @@ const resetForm = () => {
     };
 };
 
-// Initialize data
-onMounted(() => {
-    employees.value = employeeData.employeeInformation;
-    
-    // Add some sample reviews
-    reviews.value = [
-        {
-            id: 1,
-            employeeId: 1,
-            employeeName: 'Sibongile Nkosi',
-            department: 'Development',
-            period: '2025-11',
-            review: 'Wow, Sibongile Nkosi is amazing!',
-            reviewDate: '2025-11-30T10:00:00'
-        },
-        {
-            id: 2,
-            employeeId: 2,
-            employeeName: 'Lungile Moyo',
-            department: 'HR',
-            period: '2025-11',
-            review: 'Lungile, What a lad!',
-            reviewDate: '2025-11-28T14:30:00'
-        },
-        {
-            id: 3,
-            employeeId: 3,
-            employeeName: 'Thabo Molefe',
-            department: 'QA',
-            period: '2025-11',
-            review: 'Who is Thabo? I have never heard of him.',
-            reviewDate: '2025-11-25T11:15:00'
+const loadReviewData = async () => {
+    try {
+        isLoading.value = true;
+        console.log('Fetching reviews from backend...');
+        
+        const response = await fetch(`${API_BASE_URL}/reviews`);
+        console.log(`Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-    ];
+        
+        const reviewsFromAPI = await response.json();
+        console.log('Reviews received:', reviewsFromAPI);
+        
+        reviews.value = reviewsFromAPI.map(rev => ({
+            id: rev.review_id,
+            employeeId: rev.employee_id,
+            employeeName: employees.value.find(e => e.employeeId === rev.employee_id)?.name || 'Unknown',
+            department: employees.value.find(e => e.employeeId === rev.employee_id)?.department || 'Unknown',
+            period: rev.review_period,
+            review: rev.review,
+            reviewDate: rev.review_date
+        }));
+        
+        console.log(`Successfully loaded ${reviews.value.length} reviews`);
+        isLoading.value = false;
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        isLoading.value = false;
+        alert('Failed to load reviews:\n' + error.message + '\n\nMake sure:\n1. Backend is running on http://localhost:5051\n2. MySQL database is running\n3. "modern_solutions" database exists with "reviews" table');
+    }
+};
+
+onMounted(async () => {
+    try {
+        console.log('ReviewView mounted - loading data...');
+        employees.value = employeeData.employeeInformation;
+        console.log(`Loaded ${employees.value.length} employees`);
+        
+        await loadReviewData();
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        alert('Failed to load review view: ' + error.message);
+    }
 });
 </script>
 
