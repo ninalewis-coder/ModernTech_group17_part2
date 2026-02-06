@@ -86,35 +86,101 @@
                             </thead>
                             <tbody>
                                 <tr v-for="employee in filteredEmployees" :key="employee.employeeId ?? employee.employee_id">
-                                    <td>{{ employee.employeeId ?? employee.employee_id }}</td>
-                                    <td>{{ employee.name }}</td>
-                                    <td>{{ employee.position }}</td>
                                     <td>
-                                        <span class="badge bg-secondary">{{ employee.department }}</span>
+                                        <span v-if="!isEditing(employee)">{{ employee.employeeId ?? employee.employee_id }}</span>
+                                        <input
+                                            v-else
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            v-model="editDraft.employee_id"
+                                        />
                                     </td>
-                                    <td>{{ employee.contact }}</td>
-                                    <td class="fw-bold">R{{ employee.salary.toLocaleString() }}</td>
                                     <td>
-                                        <button 
-                                            class="btn btn-sm btn-outline-primary me-1"
-                                            @click="viewEmployee(employee)"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#viewEmployeeModal"
-                                        >
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                        <button 
-                                            class="btn btn-sm btn-outline-success me-1"
-                                            @click="editEmployee(employee)"
-                                        >
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button 
-                                            class="btn btn-sm btn-outline-danger"
-                                            @click="deleteEmployee(employee.employeeId ?? employee.employee_id, employee.name)"
-                                        >
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                        <span v-if="!isEditing(employee)">{{ employee.name }}</span>
+                                        <input
+                                            v-else
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            v-model="editDraft.name"
+                                        />
+                                    </td>
+                                    <td>
+                                        <span v-if="!isEditing(employee)">{{ employee.position }}</span>
+                                        <input
+                                            v-else
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            v-model="editDraft.position"
+                                        />
+                                    </td>
+                                    <td>
+                                        <span v-if="!isEditing(employee)" class="badge bg-secondary">{{ employee.department }}</span>
+                                        <input
+                                            v-else
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            v-model="editDraft.department"
+                                        />
+                                    </td>
+                                    <td>
+                                        <span v-if="!isEditing(employee)">{{ employee.contact }}</span>
+                                        <input
+                                            v-else
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            v-model="editDraft.contact"
+                                        />
+                                    </td>
+                                    <td class="fw-bold">
+                                        <span v-if="!isEditing(employee)">R{{ employee.salary.toLocaleString() }}</span>
+                                        <div v-else class="input-group input-group-sm">
+                                            <span class="input-group-text">R</span>
+                                            <input
+                                                type="number"
+                                                class="form-control"
+                                                v-model="editDraft.salary"
+                                                min="0"
+                                                step="1000"
+                                            />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <template v-if="!isEditing(employee)">
+                                            <button
+                                                class="btn btn-sm btn-outline-primary me-1"
+                                                @click="viewEmployee(employee)"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#viewEmployeeModal"
+                                            >
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button
+                                                class="btn btn-sm btn-outline-success me-1"
+                                                @click="editEmployee(employee)"
+                                            >
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button
+                                                class="btn btn-sm btn-outline-danger"
+                                                @click="deleteEmployee(employee.employeeId ?? employee.employee_id, employee.name)"
+                                            >
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </template>
+                                        <template v-else>
+                                            <button
+                                                class="btn btn-sm btn-success me-1"
+                                                @click="saveEmployeeEdit(employee)"
+                                            >
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                            <button
+                                                class="btn btn-sm btn-secondary"
+                                                @click="cancelEmployeeEdit"
+                                            >
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </template>
                                     </td>
                                 </tr>
                             </tbody>
@@ -368,6 +434,15 @@ const newEmployee = ref({
     contact: '',
     employment_history: '',
 });
+const editingEmployeeId = ref(null);
+const editDraft = ref({
+    employee_id: '',
+    name: '',
+    position: '',
+    department: '',
+    contact: '',
+    salary: '',
+});
 
 // Computed properties
 // const departments = computed(() => {
@@ -431,7 +506,51 @@ const viewEmployee = (employee) => {
 };
 
 const editEmployee = (employee) => {
-    alert(`Edit employee: ${employee.name}\n(This is a demo feature)`);
+    editingEmployeeId.value = employee.employeeId ?? employee.employee_id;
+    editDraft.value = {
+        employee_id: String(employee.employeeId ?? employee.employee_id ?? ''),
+        name: employee.name ?? '',
+        position: employee.position ?? '',
+        department: employee.department ?? '',
+        contact: employee.contact ?? '',
+        salary: employee.salary ?? '',
+    };
+};
+
+const isEditing = (employee) => {
+    const employeeId = employee.employeeId ?? employee.employee_id;
+    return editingEmployeeId.value !== null && employeeId === editingEmployeeId.value;
+};
+
+const cancelEmployeeEdit = () => {
+    editingEmployeeId.value = null;
+    editDraft.value = {
+        employee_id: '',
+        name: '',
+        position: '',
+        department: '',
+        contact: '',
+        salary: '',
+    };
+};
+
+const saveEmployeeEdit = async (employee) => {
+    const originalId = employee.employeeId ?? employee.employee_id;
+    const payload = {
+        employee_id: editDraft.value.employee_id,
+        name: editDraft.value.name?.trim() || '',
+        position: editDraft.value.position?.trim() || '',
+        department: editDraft.value.department?.trim() || '',
+        contact: editDraft.value.contact?.trim() || '',
+        salary: Number(editDraft.value.salary) || 0,
+    };
+    try {
+        await store.updateEmployee(originalId, payload);
+        cancelEmployeeEdit();
+        alert('Employee updated successfully!');
+    } catch (error) {
+        alert('Failed to update employee: ' + error.message);
+    }
 };
 
 const deleteEmployee = async (employeeId, employeeName) => {
