@@ -14,7 +14,7 @@
 
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#leaveModal">
+                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#leaveModal">
                     <i class="bi bi-plus-circle"></i> Request Leave
                 </button>
             </div>
@@ -123,7 +123,7 @@
                                             class="btn btn-sm btn-success me-1"
                                             @click="approveRequest(request.id)"
                                         >
-                                            Approve
+                                            <i class="bi bi-check-circle me-1"></i> Approve
                                         </button>
                                         <button 
                                             v-if="request.status === 'Pending'" 
@@ -212,10 +212,10 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Cancel
+                            <i class="bi bi-x-circle me-1"></i> Cancel
                         </button>
-                        <button type="submit" class="btn btn-primary">
-                            Submit Request
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i> Submit Request
                         </button>
                     </div>
                 </form>

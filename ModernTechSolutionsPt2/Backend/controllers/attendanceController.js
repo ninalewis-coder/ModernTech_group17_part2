@@ -1,3 +1,4 @@
+import App from "@/App.vue";
 import db from "../config/db.js";
 
 // Get ALL attendance records
@@ -52,5 +53,58 @@ export const addAttendance = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error adding attendance" });
+}
+};
+
+  // Update attendance status
+ export const updateAttendance = async (req, res) => {
+  const { attendance_id } = req.params;
+  const { status } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ error: "Status is required" });
   }
+
+  try {
+    await db.query(
+      "UPDATE attendance SET status = ? WHERE attendance_id = ?",
+      [status, attendance_id]
+    );
+
+    res.json({ message: "Attendance updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating attendance" });
+  }
+};
+// Patch attendance status
+  export const patchAttendance = async (req, res) => { 
+    const { attendance_id } = req.params; 
+    const { status } = req.body;
+
+if (!status) { return res.status(400).json({ error: "Status is required" }); 
+}
+
+try { await db.query( "UPDATE attendance SET status = ? WHERE attendance_id = ?", [status, attendance_id] );
+
+res.json({ message: "Attendance status patched successfully" });
+
+} catch (error) { 
+  console.error(error); 
+  res.status(500).json({ message: "Error patching attendance status" }); 
+}
+ };
+
+ // Delete attendance record
+export const deleteAttendance = async (req, res) => { const { attendance_id } = req.params;
+
+try { await db.query( "DELETE FROM attendance WHERE attendance_id = ?", [attendance_id] );
+
+res.json({ message: "Attendance deleted successfully" });
+
+} catch (error) { 
+  console.error(error); 
+  res.status(500).json({ message: "Error deleting attendance" }); 
+} 
+
 };

@@ -1,9 +1,8 @@
 import db from "../config/db.js";
 
-// Submit a leave request
+//POST a leave request
 export const submitLeave = async (req, res) => {
   const { employee_id, leave_date, reason } = req.body;
-
   if (!employee_id || !leave_date || !reason) {
     return res.status(400).json({ error: "All fields required" });
   }
@@ -13,63 +12,46 @@ export const submitLeave = async (req, res) => {
       "INSERT INTO leave_request (employee_id, leave_date, reason, status) VALUES (?, ?, ?, 'Pending')",
       [employee_id, leave_date, reason]
     );
-
     res.status(201).json({ message: "Leave request submitted" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Failed to submit leave request" });
   }
 };
 
-// Get ALL leave requests
+// Get all Leave records
 export const getLeaveRequests = async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM leave_request");
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch leave requests" });
-  }
+  const [rows] = await db.query("SELECT * FROM leave_request");
+  res.json(rows);
 };
 
-// Get leave requests by employee
+//get leave requests by employee
 export const getLeaveByEmployee = async (req, res) => {
   const { employee_id } = req.params;
-
-  try {
-    const [rows] = await db.query(
-      "SELECT * FROM leave_request WHERE employee_id = ?",
-      [employee_id]
-    );
-
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch employee leave requests" });
-  }
+  const [rows] = await db.query(
+    "SELECT * FROM leave_request WHERE employee_id = ?",
+    [employee_id]
+  );
+  res.json(rows);
 };
 
-// Add leave request (alias for submitLeave, keeps routes happy)
-export const addLeaveRequest = submitLeave;
-
-// Update leave status
+//
 export const updateLeaveStatus = async (req, res) => {
   const { leave_id } = req.params;
   const { status } = req.body;
 
-  if (!status) {
-    return res.status(400).json({ error: "Status is required" });
-  }
+  await db.query(
+    "UPDATE leave_request SET status = ? WHERE leave_id = ?",
+    [status, leave_id]
+  );
+  res.json({ message: "Leave status updated" });
+};
 
-  try {
-    await db.query(
-      "UPDATE leave_request SET status = ? WHERE leave_id = ?",
-      [status, leave_id]
-    );
+// DELETE leave request record
+export const deleteLeaveRequest = async (req, res) => {
+  const { leave_id } = req.params;
+  await db.query("DELETE FROM leave_request WHERE leave_id = ?", [
+    leave_id,
+  ]);
+  res.json({ message: "Leave request deleted" });
 
-    res.json({ message: "Leave status updated" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Update failed" });
-  }
 };

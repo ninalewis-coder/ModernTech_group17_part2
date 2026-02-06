@@ -1,14 +1,20 @@
 <template>
     <div class="review-container">
-        <div class="container-fluid">
-            <div class="mb-4">
-                <h1>Performance Reviews</h1>
-                <p class="text-muted">Submit and view employee performance reviews</p>
+        <div>
+            <div class="col-md-12 col-sm-12 mb-12">
+                <div class="card m-1" style="background-color: rgb(122, 108, 202);">
+                    <div class="card-body" style="color:white">
+                        <h5 class="card-title" style="font-size:xx-large;">
+                            Performance Review
+                        </h5>
+                    </div>
+                </div>
             </div>
+    
 
             <!-- Submit Review Form -->
             <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-dark text-white">
                     <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Submit New Review</h5>
                 </div>
                 <div class="card-body">
@@ -40,12 +46,14 @@
                             ></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Submit Review
-                        </button>
-                        <button type="button" class="btn btn-secondary ms-2" @click="resetForm">
-                            <i class="bi bi-x-circle"></i> Clear Form
-                        </button>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" @click="resetForm">
+                                <i class="bi bi-x-circle"></i> Clear Form
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-1"></i> Submit Review
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

@@ -9,25 +9,29 @@ This system manages employee information, payroll, performance reviews, attendan
 ## Project Structure
 
 ```
-ModernTech_group17_part2/
-├── Backend/
-│   └── index.js                 (Unified API server for payroll and reviews)
-├── ModernTech_HR-group17_m2-master/
-│   ├── src/
-│   │   ├── views/
-│   │   │   ├── PayrollView.vue
-│   │   │   ├── ReviewView.vue
-│   │   │   ├── EmployeesView.vue
-│   │   │   ├── AttendanceView.vue
-│   │   │   ├── LeaveView.vue
-│   │   │   └── LoginView.vue
-│   │   ├── components/
-│   │   ├── stores/
-│   │   ├── router/
-│   │   └── data/
-│   ├── package.json
-│   └── vite.config.js
-└── README.md
+1 ModernTech_group17_part2/
+├── ModernTechSolutionsPt2/
+│   ├── Backend/
+│   │   ├── index.js                 (Unified API server for payroll and reviews)
+│   │   └── package.json
+│   └── ModernTech_HR-group17_m2-master/
+│       ├── src/
+│       │   ├── views/
+│       │   │   ├── PayrollView.vue
+│       │   │   ├── ReviewView.vue
+│       │   │   ├── EmployeesView.vue
+│       │   │   ├── AttendanceView.vue
+│       │   │   ├── LeaveView.vue
+│       │   │   └── LoginView.vue
+│       │   ├── components/
+│       │   ├── stores/
+│       │   ├── router/
+│       │   └── data/
+│       ├── package.json
+│       └── vite.config.js
+├── README.md
+├── package.json
+└── package-lock.json
 ```
 
 ## Technology Stack
@@ -113,6 +117,12 @@ These are configured in:
 - PayrollView.vue: const API_BASE_URL = 'http://localhost:5050'
 - ReviewView.vue: const API_BASE_URL = 'http://localhost:5050'
 
+
+- Employees calls the backend API:
+  - Base URL: http://localhost:5050
+  - Service: src/api/employeeService.js
+  - Store: src/stores/employeeStore.js
+
 ## Running the Application
 
 STEP 1 - Start the Backend API
@@ -191,6 +201,40 @@ DELETE /reviews/:id
 - Delete review
 - Returns: { message, result }
 
+EMPLOYEE ENDPOINTS
+
+GET /employee
+- Fetch all employees
+- Returns: Array of employee objects
+
+GET /employee/:id
+- Fetch a single employee by ID
+- Returns: Employee object
+
+POST /employee
+- Create new employee
+- Body: { employee_id, name, position, department, salary, contact, employment_history }
+- Returns: { message, result }
+
+PATCH /employee/:id
+- Update employee
+- Body: { employee_id, name, position, department, salary, contact, employment_history }
+- Returns: { message, result }
+
+DELETE /employee/:id
+- Delete employee
+- Returns: { message, result }
+
+LEAVE ENDPOINTS
+
+- Not implemented in the backend yet.
+- Leave requests are currently handled client-side in `LeaveView.vue` using `src/data/attendance.json`.
+
+ATTENDANCE ENDPOINTS
+
+- Not implemented in the backend yet.
+- Attendance data is currently read from `src/data/attendance.json` on the client.
+
 ## Features
 
 PAYROLL MANAGEMENT
@@ -212,12 +256,24 @@ EMPLOYEE MANAGEMENT
 - View employee information
 - Department and position details
 - Employee contact information
+- Add new employees via modal form
+- Edit employee details inline
+- Delete employees
+- Search by name, department, or position
+- Filter by department
+- Department breakdown with counts and percentages
 - Integration with payroll and review systems
 
-ATTENDANCE & LEAVE
+ATTENDANCE
 - Track employee attendance
+- View attendance records by employee
+
+LEAVE
 - Manage leave requests
 - View leave history
+- Submit leave requests
+- Approve or deny pending requests
+- Auto-calculate leave duration
 
 ## Database Schema
 
@@ -263,6 +319,31 @@ REVIEW VIEW:
 6. On form submit: POST to /reviews with new review
 7. Date conversion: ISO format to MySQL DATETIME format
 8. Refreshes table after successful submission
+
+EMPLOYEE VIEW:
+1. Component mounts
+2. Employee store fetches data from API GET /employee
+3. Store updates state and view renders table
+4. Search and department filters are applied client-side
+5. Inline edit: PATCH /employee/:id, then refresh list
+6. Add employee: POST /employee, then refresh list
+7. Delete employee: DELETE /employee/:id, then update local state
+
+LEAVE VIEW:
+1. Component mounts
+2. Loads employees from `src/data/employee_info.json`
+3. Loads attendance/leave data from `src/data/attendance.json`
+4. Transforms leave records into request list
+5. Filters requests by status tabs (All/Pending/Approved/Denied)
+6. On submit: adds a new request in local state and resets form
+7. Approve/Deny updates status in local state only
+
+ATTENDANCE VIEW:
+1. Component mounts
+2. Loads attendance data from `src/data/attendance.json`
+3. Transforms attendance records into table rows
+4. Filters/searches are applied client-side (if enabled)
+5. No backend API calls; data is read-only unless extended
 
 ## Troubleshooting
 
@@ -359,6 +440,17 @@ INSERT INTO reviews (review_id, employee_id, review_period, review, review_date)
 VALUES (?, ?, ?, ?, ?);
 ```
 
+Fetch employees:
+```sql
+SELECT * FROM employees;
+```
+
+Add employee:
+```sql
+INSERT INTO employees (employee_id, name, department, position, salary, contact, employment_history)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+```
+
 ## Deployment Notes
 
 For production deployment:
@@ -389,4 +481,3 @@ Last Updated: February 6, 2026
 
 ModernTech Group 17
 Part 2 - Database Integration
-

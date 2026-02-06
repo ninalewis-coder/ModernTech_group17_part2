@@ -14,7 +14,7 @@
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <button class="btn btn-dark float-end" data-bs-toggle="modal" data-bs-target="#payrollModal">
-                    <i class="bi bi-plus-circle"></i> Process Payroll
+                    <i class="bi bi-check-circle me-1"></i> Process Payroll
                 </button>
             </div>
 
@@ -59,7 +59,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Payroll Records</h5>
                     <button class="btn btn-sm btn-success" @click="generateAllPayslips">
-                        Generate All Payslips
+                        <i class="bi bi-check-circle me-1"></i> Generate All Payslips
                     </button>
                 </div>
                 <div class="card-body">
@@ -97,7 +97,7 @@
                                             class="btn btn-sm btn-success"
                                             @click="downloadPayslip(payroll)"
                                         >
-                                            Download
+                                            <i class="bi bi-check-circle me-1"></i> Download
                                         </button>
                                     </td>
                                 </tr>
@@ -152,10 +152,10 @@
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Cancel
+                                <i class="bi bi-x-circle me-1"></i> Cancel
                             </button>
-                            <button type="submit" class="btn btn-primary">
-                                Process Payroll
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-1"></i> Process Payroll
                             </button>
                         </div>
                     </form>

@@ -39,7 +39,9 @@
             <button type="button" class="btn-close" @click="errorMessage = ''"></button>
           </div>
 
-          <button type="submit" class="btn btn-purple btn-lg w-100 mb-3">Login</button>
+          <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+            <i class="bi bi-check-circle me-1"></i> Login
+          </button>
         </form>
 
         <hr />
