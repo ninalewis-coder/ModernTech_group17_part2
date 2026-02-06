@@ -69,7 +69,9 @@ export const useEmployeeStore = defineStore("employee", {
       try {
         const result = await employeeService.deleteEmployee(employeeId);
         // Remove from local state
-        this.employees = this.employees.filter(emp => emp.employee_id !== employeeId);
+        this.employees = this.employees.filter(
+          emp => emp.employee_id !== employeeId && emp.employeeId !== employeeId
+        );
         return result;
       } catch (error) {
         console.error(`Error deleting employee ${employeeId}:`, error);

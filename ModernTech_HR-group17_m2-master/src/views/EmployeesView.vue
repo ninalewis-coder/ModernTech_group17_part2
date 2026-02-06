@@ -85,8 +85,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="employee in filteredEmployees" :key="employee.employeeId">
-                                    <td>{{ employee.employeeId }}</td>
+                                <tr v-for="employee in filteredEmployees" :key="employee.employeeId ?? employee.employee_id">
+                                    <td>{{ employee.employeeId ?? employee.employee_id }}</td>
                                     <td>{{ employee.name }}</td>
                                     <td>{{ employee.position }}</td>
                                     <td>
@@ -111,7 +111,7 @@
                                         </button>
                                         <button 
                                             class="btn btn-sm btn-outline-danger"
-                                            @click="deleteEmployee(employee.employeeId)"
+                                            @click="deleteEmployee(employee.employeeId ?? employee.employee_id, employee.name)"
                                         >
                                             <i class="bi bi-trash"></i>
                                         </button>
