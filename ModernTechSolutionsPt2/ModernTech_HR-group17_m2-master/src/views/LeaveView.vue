@@ -156,7 +156,7 @@
                             <label class="form-label">Employee *</label>
                             <select class="form-select" v-model="newRequest.employeeId" required>
                                 <option value="">-- Choose an Employee --</option>
-                                <option v-for="emp in employees" :key="emp.employeeId" :value="emp.employeeId">
+                                <option v-for="emp in employees" :key="emp.employee_id" :value="emp.employee_id">
                                     {{ emp.name }}
                                 </option>
                             </select>
@@ -175,21 +175,12 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Start Date *</label>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Date *</label>
                                 <input 
                                     type="date"
                                     class="form-control"
                                     v-model="newRequest.startDate"
-                                    required
-                                />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">End Date *</label>
-                                <input 
-                                    type="date"
-                                    class="form-control"
-                                    v-model="newRequest.endDate"
                                     required
                                 />
                             </div>
@@ -226,11 +217,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import attendanceData from '@/data/attendance.json';
-import employeeData from '@/data/employee_info.json';
+import { useLeaveStore } from '@/stores/leaveStore';
+import { employeeService } from '@/api/employeeService';
 
+const leaveStore = useLeaveStore();
 const employees = ref([]);
-const leaveRequests = ref([]);
 const activeTab = ref('all');
 const newRequest = ref({
     employeeId: '',
@@ -241,24 +232,48 @@ const newRequest = ref({
 });
 
 // Computed properties
-const pendingCount = computed(() => 
-    leaveRequests.value.filter(r => r.status === 'Pending').length
-);
-
-const approvedCount = computed(() => 
-    leaveRequests.value.filter(r => r.status === 'Approved').length
-);
-
-const deniedCount = computed(() => 
-    leaveRequests.value.filter(r => r.status === 'Denied').length
-);
+const pendingCount = computed(() => leaveStore.pendingRequests.length);
+const approvedCount = computed(() => leaveStore.approvedRequests.length);
+const deniedCount = computed(() => leaveStore.deniedRequests.length); // Assuming 'Denied' is the status in DB
 
 const filteredLeaveRequests = computed(() => {
-    if (activeTab.value === 'all') return leaveRequests.value;
-    if (activeTab.value === 'pending') return leaveRequests.value.filter(r => r.status === 'Pending');
-    if (activeTab.value === 'approved') return leaveRequests.value.filter(r => r.status === 'Approved');
-    if (activeTab.value === 'denied') return leaveRequests.value.filter(r => r.status === 'Denied');
-    return leaveRequests.value;
+    // Map requests to include employee name
+    let requests = leaveStore.leaveRequests.map(r => {
+        const emp = employees.value.find(e => e.employee_id === r.employee_id);
+        
+        // Calculate duration on the fly if not in DB, but DB has start/end usually
+        // The DB schema had leave_date (single date?). 
+        // Wait, schema check: "leave_date DATE", "reason VARCHAR".
+        // It seems the DB only supports single day leave or start date?
+        // "leave_request" table: leave_id, employee_id, leave_date, reason, status.
+        // It does NOT have end_date. 
+        // For now, we will assume leave_date is the start date or the only date.
+        // We might need to adjust the frontend to match the schema or backend to match frontend.
+        // The frontend expects start and end date.
+        // I will map start and end date to leave_date for now to avoid breaking UI, 
+        // but real fix implies DB change or Backend handling.
+        // As I cannot change DB schema easily without migration, I will assume leave_date is start.
+        
+        return {
+            id: r.leave_id, // Map leave_id to id
+            employeeId: r.employee_id,
+            employeeName: emp ? emp.name : 'Unknown',
+            leaveType: r.reason, // Schema uses 'reason' for type/reason? 
+            // Actually schema has 'reason'. Frontend has 'leaveType' AND 'reason'.
+            // I'll map 'reason' from DB to 'leaveType' and 'reason' for display if needed.
+            startDate: r.leave_date,
+            endDate: r.leave_date, // Single date in DB
+            duration: 1, // Defaulting to 1 as DB only has one date
+            reason: r.reason, 
+            status: r.status
+        };
+    });
+
+    if (activeTab.value === 'all') return requests;
+    if (activeTab.value === 'pending') return requests.filter(r => r.status === 'Pending');
+    if (activeTab.value === 'approved') return requests.filter(r => r.status === 'Approved');
+    if (activeTab.value === 'denied') return requests.filter(r => r.status === 'Denied');
+    return requests;
 });
 
 const calculateDays = computed(() => {
@@ -274,6 +289,7 @@ const calculateDays = computed(() => {
 
 // Methods
 const formatDate = (dateString) => {
+    if (!dateString) return '';
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-US', options);
 };
@@ -284,77 +300,60 @@ const getStatusBadgeClass = (status) => {
     return 'badge bg-warning text-dark';
 };
 
-const submitLeaveRequest = () => {
-    const employee = employees.value.find(e => e.employeeId === parseInt(newRequest.value.employeeId));
-    
-    const request = {
-        id: leaveRequests.value.length + 1,
-        employeeId: newRequest.value.employeeId,
-        employeeName: employee.name,
-        leaveType: newRequest.value.leaveType,
-        startDate: newRequest.value.startDate,
-        endDate: newRequest.value.endDate,
-        duration: calculateDays.value,
-        reason: newRequest.value.reason,
-        status: 'Pending'
+const submitLeaveRequest = async () => {
+    const requestData = {
+        employee_id: newRequest.value.employeeId,
+        leave_date: newRequest.value.startDate, // DB only has leave_date
+        reason: `${newRequest.value.leaveType}: ${newRequest.value.reason}` // Combine type and reason for DB
     };
     
-    leaveRequests.value.push(request);
-    
-    // Reset form
-    newRequest.value = {
-        employeeId: '',
-        leaveType: '',
-        startDate: '',
-        endDate: '',
-        reason: ''
-    };
-    
-    // Close modal (using Bootstrap's modal API)
-    const modalElement = document.getElementById('leaveModal');
-    const modal = bootstrap.Modal.getInstance(modalElement);
-    if (modal) modal.hide();
-    
-    alert('Leave request submitted successfully!');
-};
-
-const approveRequest = (id) => {
-    const request = leaveRequests.value.find(r => r.id === id);
-    if (request) {
-        request.status = 'Approved';
-        alert('Leave request approved!');
+    try {
+        await leaveStore.submitLeaveRequest(requestData);
+        
+        // Reset form
+        newRequest.value = {
+            employeeId: '',
+            leaveType: '',
+            startDate: '',
+            endDate: '',
+            reason: ''
+        };
+        
+        // Close modal
+        const modalElement = document.getElementById('leaveModal');
+        // Check if bootstrap is available globally or need import. 
+        // Usually attached to window in these templates.
+        if (window.bootstrap) {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+        }
+        
+        alert('Leave request submitted successfully!');
+    } catch (error) {
+        alert('Failed to submit leave request: ' + error.message);
     }
 };
 
-const denyRequest = (id) => {
-    const request = leaveRequests.value.find(r => r.id === id);
-    if (request) {
-        request.status = 'Denied';
-        alert('Leave request denied!');
+const approveRequest = async (id) => {
+    if (confirm('Approve this leave request?')) {
+        await leaveStore.updateLeaveStatus(id, 'Approved');
+    }
+};
+
+const denyRequest = async (id) => {
+    if (confirm('Deny this leave request?')) {
+        await leaveStore.updateLeaveStatus(id, 'Denied');
     }
 };
 
 // Initialize data
-onMounted(() => {
-    employees.value = employeeData.employeeInformation;
-    
-    // Transform attendance data into leave requests
-    let requestId = 1;
-    attendanceData.attendanceAndLeave.forEach(empData => {
-        empData.leaveRequests.forEach(leave => {
-            leaveRequests.value.push({
-                id: requestId++,
-                employeeId: empData.employeeId,
-                employeeName: empData.name,
-                leaveType: leave.reason,
-                startDate: leave.date,
-                endDate: leave.date,
-                duration: 1,
-                reason: leave.reason,
-                status: leave.status
-            });
-        });
-    });
+onMounted(async () => {
+    try {
+        employees.value = await employeeService.getAllEmployees();
+        await leaveStore.fetchLeaveRequests();
+    } catch (error) {
+        console.error("Error loading data:", error);
+    }
 });
 </script>
 

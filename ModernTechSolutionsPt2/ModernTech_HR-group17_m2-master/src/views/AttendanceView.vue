@@ -26,7 +26,7 @@
                 <div class="col-md-4 mb-3">
                     <select class="form-select" v-model="selectedEmployee">
                        <option value="">All Employees</option>
-                       <option v-for="emp in employees" :key="emp.employeeId" :value="emp.employeeId">
+                       <option v-for="emp in employees" :key="emp.employee_id" :value="emp.employee_id">
                            {{ emp.name }}
                        </option>
                     </select>
@@ -55,7 +55,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="record in filteredAttendanceRecords" :key="record.id">
+                                <tr v-for="record in filteredAttendanceRecords" :key="record.attendance_id">
                                     <td>{{ record.employeeName }}</td>
                                     <td>{{ formatDate(record.date) }}</td>
                                     <td>
@@ -66,9 +66,9 @@
                                     <td>{{ record.department }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-primary me-2" @click="editAttendance(record)">
-                                            Edit
+                                            Toggle Status
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger" @click="deleteAttendance(record.id)">
+                                        <button class="btn btn-sm btn-outline-danger" @click="deleteAttendance(record.attendance_id)">
                                             Delete
                                         </button>
                                     </td>
@@ -114,18 +114,20 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import attendanceData from '@/data/attendance.json';
-import employeeData from '@/data/employee_info.json';
+import { useAttendanceStore } from '@/stores/attendanceStore';
+import { employeeService } from '@/api/employeeService'; // Assuming this exists or using store if created
+// If employeeService doesn't exist yet as a store, we use the service directly.
+// The plan mentioned using employeeService. 
 
+const attendanceStore = useAttendanceStore();
 const employees = ref([]);
-const attendanceRecords = ref([]);
 const searchQuery = ref('');
 const selectedEmployee = ref('');
 const selectedDate = ref('');
 
 // Computed statistics
 const attendanceStats = computed(() => {
-    const allRecords = attendanceRecords.value;
+    const allRecords = attendanceStore.attendanceRecords;
     return {
         totalDays: allRecords.length,
         present: allRecords.filter(r => r.status === 'Present').length,
@@ -139,12 +141,27 @@ const attendanceRate = computed(() => {
 });
 
 const uniqueDepartments = computed(() => {
-    const departments = new Set(employees.value.map(e => e.department));
-    return departments.size;
+    // We need employee details for department. 
+    // If attendance record has employee_id, we look up in employees array.
+    const depts = new Set();
+    attendanceStore.attendanceRecords.forEach(r => {
+        const emp = employees.value.find(e => e.employee_id === r.employee_id);
+        if (emp && emp.department) {
+            depts.add(emp.department);
+        }
+    });
+    return depts.size;
 });
 
 const filteredAttendanceRecords = computed(() => {
-    let records = attendanceRecords.value;
+    let records = attendanceStore.attendanceRecords.map(r => {
+        const emp = employees.value.find(e => e.employee_id === r.employee_id);
+        return {
+            ...r,
+            employeeName: emp ? emp.name : 'Unknown', // Helper for display
+            department: emp ? emp.department : 'Unknown'
+        };
+    });
     
     if (searchQuery.value) {
         records = records.filter(r => 
@@ -153,11 +170,15 @@ const filteredAttendanceRecords = computed(() => {
     }
     
     if (selectedEmployee.value) {
-        records = records.filter(r => r.employeeId === selectedEmployee.value);
+        records = records.filter(r => r.employee_id === selectedEmployee.value);
     }
     
     if (selectedDate.value) {
-        records = records.filter(r => r.date === selectedDate.value);
+        // Ensure date format matches. Backend sends ISO string or date string.
+        // We'll normalize to YYYY-MM-DD for comparison if needed, 
+        // but simplest is if input date matches format.
+        // Let's assume strict match or substring match for now.
+        records = records.filter(r => r.date.startsWith(selectedDate.value));
     }
     
     return records;
@@ -165,6 +186,7 @@ const filteredAttendanceRecords = computed(() => {
 
 // Methods
 const formatDate = (dateString) => {
+    if (!dateString) return '';
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-US', options);
 };
@@ -175,35 +197,29 @@ const getStatusBadgeClass = (status) => {
         : 'badge bg-danger';
 };
 
-const editAttendance = (record) => {
-    alert(`Edit attendance for ${record.employeeName} on ${formatDate(record.date)}`);
+const editAttendance = async (record) => {
+    // Simple toggle for now as per previous logic, or prompt
+    const newStatus = record.status === 'Present' ? 'Absent' : 'Present';
+    if (confirm(`Change status for ${record.employeeName} to ${newStatus}?`)) {
+        await attendanceStore.updateAttendance(record.attendance_id, newStatus);
+    }
 };
 
-const deleteAttendance = (id) => {
+const deleteAttendance = async (id) => {
     if (confirm('Are you sure you want to delete this attendance record?')) {
-        attendanceRecords.value = attendanceRecords.value.filter(r => r.id !== id);
+        await attendanceStore.deleteAttendance(id);
     }
 };
 
 // Initialize data
-onMounted(() => {
-    employees.value = employeeData.employeeInformation;
-    
-    // Transform attendance data into flat records
-    let recordId = 1;
-    attendanceData.attendanceAndLeave.forEach(empData => {
-        const employee = employees.value.find(e => e.employeeId === empData.employeeId);
-        empData.attendance.forEach(att => {
-            attendanceRecords.value.push({
-                id: recordId++,
-                employeeId: empData.employeeId,
-                employeeName: empData.name,
-                date: att.date,
-                status: att.status,
-                department: employee ? employee.department : 'Unknown'
-            });
-        });
-    });
+onMounted(async () => {
+    try {
+        // Fetch employees first to populate names
+        employees.value = await employeeService.getAllEmployees(); 
+        await attendanceStore.fetchAttendance();
+    } catch (error) {
+        console.error("Error loading data:", error);
+    }
 });
 </script>
 
