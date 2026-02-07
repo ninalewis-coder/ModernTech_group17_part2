@@ -20,8 +20,15 @@ export const submitLeave = async (req, res) => {
 
 // Get all Leave records
 export const getLeaveRequests = async (req, res) => {
-  const [rows] = await db.query("SELECT * FROM leave_request");
-  res.json(rows);
+  try {
+    const [rows] = await db.query("SELECT * FROM leave_request");
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching leave requests:", error);
+    console.error("Error Code:", error.code);
+    console.error("Error Message:", error.message);
+    res.status(500).json({ error: "Failed to fetch leave requests", details: error.message || error.code });
+  }
 };
 
 //get leave requests by employee
@@ -39,11 +46,25 @@ export const updateLeaveStatus = async (req, res) => {
   const { leave_id } = req.params;
   const { status } = req.body;
 
-  await db.query(
-    "UPDATE leave_request SET status = ? WHERE leave_id = ?",
-    [status, leave_id]
-  );
-  res.json({ message: "Leave status updated" });
+  console.log(`Updating leave_id: ${leave_id} to status: ${status}`);
+
+  try {
+    const [result] = await db.query(
+      "UPDATE leave_request SET status = ? WHERE leave_id = ?",
+      [status, leave_id]
+    );
+
+    if (result.affectedRows === 0) {
+      console.log("No rows updated. Check if leave_id exists.");
+      return res.status(404).json({ message: "Leave request not found or status not changed" });
+    }
+
+    console.log("Update successful. Affected rows:", result.affectedRows);
+    res.json({ message: "Leave status updated" });
+  } catch (error) {
+    console.error("Error updating leave status:", error);
+    res.status(500).json({ error: "Failed to update leave status" });
+  }
 };
 
 // DELETE leave request record

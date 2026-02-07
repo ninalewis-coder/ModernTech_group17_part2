@@ -1,12 +1,18 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import cors from 'cors';
+import attendanceRoutes from './routes/attendance.js';
+import leaveRoutes from './routes/leave.js';
+import employeeRoutes from './routes/employee.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
 app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PATCH', 'BIGINT', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type']
 }));
 
@@ -18,11 +24,22 @@ app.use((req, res, next) => {
 });
 
 const pool = mysql.createPool({
-    user: 'root',
-    host: 'localhost',
-    database: 'modern_solutions',
-    password: 'Strongmaan123!'
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT || 3306
 });
+
+// Test DB Connection
+pool.getConnection()
+    .then(conn => {
+        console.log("✅ Database connected successfully to port " + (process.env.DB_PORT || 3306));
+        conn.release();
+    })
+    .catch(err => {
+        console.error("❌ Database connection failed:", err.message);
+    });
 
 // Payroll queries
 const getPayrollData = async () => {
@@ -122,6 +139,15 @@ app.delete('/payroll/:id', async (req, res) => {
     }
 });
 
+// Attendance routes
+app.use('/attendance', attendanceRoutes);
+
+// Leave routes
+app.use('/leave', leaveRoutes);
+
+// Employee routes
+app.use('/employee', employeeRoutes);
+
 // Review routes
 app.get('/reviews', async (req, res) => {
     try {
@@ -139,10 +165,10 @@ app.post('/reviews', async (req, res) => {
     try {
         const { employee_id, review_period, review, review_date } = req.body;
         console.log('POST /reviews - Adding new review:', { employee_id, review_period });
-        
+
         const date = new Date(review_date);
         const mysqlDate = date.toISOString().slice(0, 19).replace('T', ' ');
-        
+
         const result = await postReviewData(employee_id, review_period, review, mysqlDate);
         console.log('Successfully added review with ID:', result.insertId);
         res.status(201).json({ message: 'Review added successfully', reviewId: result.insertId });

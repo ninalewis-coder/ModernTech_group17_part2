@@ -9,12 +9,23 @@ This system manages employee information, payroll, performance reviews, attendan
 ## Project Structure
 
 ```
-1 ModernTech_group17_part2/
+ModernTech_group17_part2/
 ├── ModernTechSolutionsPt2/
 │   ├── Backend/
-│   │   ├── index.js                 (Unified API server for payroll and reviews)
-│   │   └── package.json
-│   └── ModernTech_HR-group17_m2-master/
+│   │   ├── config/
+│   │   │   └── db.js            (Shared Database Pool)
+│   │   ├── controllers/         (Business Logic)
+│   │   │   ├── attendanceController.js
+│   │   │   ├── employeeController.js
+│   │   │   └── leaveController.js
+│   │   ├── routes/              (API Endpoints)
+│   │   │   ├── attendance.js
+│   │   │   ├── employee.js
+│   │   │   └── leave.js
+│   │   ├── index.js             (Main Entry Point - port 5050)
+│   │   ├── .env                 (Environment Variables)
+│   │   └── Dump20260206.sql     (Database Schema)
+│   └── ModernTech_HR-group17_m2-master/ (Vue Frontend)
 │       ├── src/
 │       │   ├── views/
 │       │   │   ├── PayrollView.vue
@@ -57,7 +68,7 @@ DATABASE:
 
 Before running the application, ensure you have:
 
-1. Node.js (v14 or higher)
+1. Node.js (v18 or higher)
 2. npm (comes with Node.js)
 3. MySQL Server running locally
 4. modern_solutions database created
@@ -83,39 +94,37 @@ The backend requires:
 - express
 - mysql2
 - cors
+- dotenv
 
 ## Configuration
 
 DATABASE CONNECTION
 
-The backend connects to MySQL using these credentials in Backend/index.js:
+The backend connects to MySQL using a `.env` file in the `Backend` folder. 
 
+1. Create a file named `.env` in the `Backend` directory.
+2. Add your credentials:
 ```
-User: root
-Host: localhost
-Database: modern_solutions
-Password: Strongmaan123!
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=8Everly@
+DB_NAME=modern_solutions
+DB_PORT=3306
 ```
 
-To change these credentials, edit Backend/index.js:
-
-```javascript
-const pool = mysql.createPool({
-    user: 'root',
-    host: 'localhost',
-    database: 'modern_solutions',
-    password: 'Strongmaan123!'
-});
-```
+The database connection is managed in `Backend/config/db.js`.
 
 API CONFIGURATION
 
 - Frontend API URL: http://localhost:5050
 - Backend Server Port: 5050
 
-These are configured in:
-- PayrollView.vue: const API_BASE_URL = 'http://localhost:5050'
-- ReviewView.vue: const API_BASE_URL = 'http://localhost:5050'
+The API services are located in:
+- src/api/payrollService.js
+- src/api/reviewService.js
+- src/api/employeeService.js
+- src/api/leaveService.js
+- src/api/attendanceService.js
 
 
 - Employees calls the backend API:
@@ -135,7 +144,7 @@ node index.js
 You should see output:
 ```
 ==================================================
-Payroll + Review API Server is RUNNING
+ModernTech HR API Server is RUNNING
 URL: http://localhost:5050
 ==================================================
 ```
@@ -227,13 +236,27 @@ DELETE /employee/:id
 
 LEAVE ENDPOINTS
 
-- Not implemented in the backend yet.
-- Leave requests are currently handled client-side in `LeaveView.vue` using `src/data/attendance.json`.
+GET /leave
+- Fetch all leave requests
+
+POST /leave
+- Submit new leave request
+- Body: { employee_id, leave_date, reason }
+
+PUT /leave/:leave_id
+- Update leave status (Approved/Denied)
 
 ATTENDANCE ENDPOINTS
 
-- Not implemented in the backend yet.
-- Attendance data is currently read from `src/data/attendance.json` on the client.
+GET /attendance
+- Fetch all attendance records
+
+POST /attendance
+- Add attendance record
+- Body: { employee_id, date, status }
+
+PUT /attendance/:attendance_id
+- Toggle attendance status (Present/Absent)
 
 ## Features
 
@@ -331,19 +354,18 @@ EMPLOYEE VIEW:
 
 LEAVE VIEW:
 1. Component mounts
-2. Loads employees from `src/data/employee_info.json`
-3. Loads attendance/leave data from `src/data/attendance.json`
-4. Transforms leave records into request list
-5. Filters requests by status tabs (All/Pending/Approved/Denied)
-6. On submit: adds a new request in local state and resets form
-7. Approve/Deny updates status in local state only
+2. Employee store fetches all employees
+3. Leave store fetches all leave requests from GET /leave
+4. Displays requests in table by status
+5. On form submit: POST to /leave
+6. On Approve/Deny: PUT to /leave/:id
 
 ATTENDANCE VIEW:
 1. Component mounts
-2. Loads attendance data from `src/data/attendance.json`
-3. Transforms attendance records into table rows
-4. Filters/searches are applied client-side (if enabled)
-5. No backend API calls; data is read-only unless extended
+2. Employee store fetches all employees
+3. Attendance store fetches all records from GET /attendance
+4. On Toggle Status: PUT to /attendance/:id
+5. On Delete: DELETE to /attendance/:id
 
 ## Troubleshooting
 
@@ -475,7 +497,7 @@ For issues or questions:
 ## Version
 
 Version: 1.0.0
-Last Updated: February 6, 2026
+Last Updated: February 7, 2026
 
 ## Team
 
